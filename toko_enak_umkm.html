@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Enak</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            color: #2d3436;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #ff7675 0%, #fdcb6e 100%), url('https://source.unsplash.com/1920x600/?food,culinary') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            position: relative;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+        }
+        header h1, header p {
+            position: relative;
+            z-index: 1;
+        }
+        .navbar-login {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+        .product-card {
+            margin-bottom: 30px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .product-card:hover {
+            transform: translateY(-10px) rotate(1deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        .product-card img {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover img {
+            transform: scale(1.1);
+        }
+        .product-card .btn {
+            background: linear-gradient(45deg, #ff7675, #fdcb6e);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+        .product-card .btn:hover {
+            background: linear-gradient(45deg, #fdcb6e, #ff7675);
+            transform: scale(1.05);
+        }
+        .filter-btn {
+            margin: 10px;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            background: #ff7675;
+            border: none;
+            color: white;
+        }
+        .filter-btn:hover {
+            background: #fdcb6e;
+            transform: scale(1.1);
+        }
+        footer {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+        footer a {
+            color: #fdcb6e;
+            margin: 0 10px;
+            font-size: 24px;
+        }
+        footer a:hover {
+            color: #ff7675;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-card { animation: fadeIn 0.8s ease-in-out; }
+
+        /* Overlay notifikasi */
+        #notification-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        #notification-message {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 90%;
+        }
+        #notification-message i {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        #notification-message h3 {
+            margin-bottom: 15px;
+        }
+        #notification-message .spinner-border {
+            margin-top: 20px;
+        }
+
+        /* Timeline tracking pesanan */
+        #tracking-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: #ff7675;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: white;
+            border: 4px solid #ff7675;
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .left {
+            left: 0;
+        }
+        .right {
+            left: 50%;
+        }
+        .left::after {
+            right: -12.5px;
+        }
+        .right::after {
+            left: -12.5px;
+        }
+        .timeline-content {
+            padding: 20px 30px;
+            background-color: white;
+            position: relative;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .timeline-content.active {
+            border: 3px solid #28a745;
+        }
+        .timeline-content i {
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: #ff7675;
+        }
+        .timeline-content.active i {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Toko Enak</h1>
+        <p>Jelajahi rasa lezat dari produk kuliner lokal terbaik!</p>
+
+        <div class="navbar-login">
+            <button class="btn btn-outline-light" id="login-btn" data-bs-toggle="modal" data-bs-target="#loginModal">
+                <i class="bi bi-person"></i> Login
+            </button>
+            <span id="user-greeting" class="text-white ms-3 fw-bold d-none"></span>
+            <button class="btn btn-outline-light ms-2 d-none" id="logout-btn">
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <button class="filter-btn" onclick="filterProducts('all')"><i class="bi bi-grid"></i> Semua</button>
+            <button class="filter-btn" onclick="filterProducts('makanan')"><i class="bi bi-egg-fried"></i> Makanan</button>
+            <button class="filter-btn" onclick="filterProducts('minuman')"><i class="bi bi-cup-straw"></i> Minuman</button>
+        </div>
+
+        <div class="text-center mb-4">
+            <button class="btn btn-lg btn-warning position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                <i class="bi bi-cart"></i> Keranjang
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-badge">0</span>
+            </button>
+            <button class="btn btn-info ms-3" onclick="showOrderTracking()">
+                <i class="bi bi-box-seam"></i> Lacak Pesanan
+            </button>
+        </div>
+
+        <div class="row" id="product-list">
+            <div class="col-lg-4 col-md-6 product-card" data-category="makanan">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\nasi_goreng.jpg" class="card-img-top" alt="Nasi Goreng Spesial">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Nasi Goreng Spesial</h5>
+                        <p class="card-text">Nasi goreng dengan ayam, telur, dan sayuran segar. Cocok untuk makan siang yang nikmat!</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 25.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Nasi Goreng Spesial', 25000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="makanan">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\sateayammadura.jpg" class="card-img-top" alt="Sate Ayam Madura">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Sate Ayam Madura</h5>
+                        <p class="card-text">Sate ayam dengan bumbu kacang khas Madura, disajikan dengan lontong hangat.</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 30.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Sate Ayam Madura', 30000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="makanan">
+                <div class="card h-100">
+                    <img src="miegorengspesial.jpg" class="card-img-top" alt="Mie Goreng Spesial">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Mie Goreng Spesial</h5>
+                        <p class="card-text">Mie goreng dengan kombinasi sayuran, ayam dan bumbu spesial, sangat nikmat!</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 20.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Mie Goreng Spesial', 20000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="makanan">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\rotibakarcoklatkacang.jpg" class="card-img-top" alt="Roti Bakar Coklat Kacang">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Roti Bakar Coklat Kacang</h5>
+                        <p class="card-text">Roti bakar dengan selai coklat dan taburan kacang, cocok untuk cemilan!</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 12.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Roti Bakar Coklat Kacang', 12000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="makanan">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\sotoayam.jpg" class="card-img-top" alt="Soto Ayam">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Soto Ayam</h5>
+                        <p class="card-text">Soto ayam dengan bumbu rempah khas, disajikan dengan nasi dan sambal.</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 28.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Soto Ayam', 28000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="minuman">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\esteh.jpg" class="card-img-top" alt="Es Teh Manis">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Es Teh Manis</h5>
+                        <p class="card-text">Teh segar dengan gula alami, menyegarkan di hari panas. Minuman favorit!</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 10.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Es Teh Manis', 10000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="minuman">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\juscampursegar.jpg" class="card-img-top" alt="Jus Campur Segar">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Jus Campur Segar</h5>
+                        <p class="card-text">Jus segar dari kombinasi buah-buahan pilihan. Menyegarkan dan sehat!</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 15.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Jus Campur Segar', 15000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 product-card" data-category="minuman">
+                <div class="card h-100">
+                    <img src="c:\Users\amel\Pictures\jusjeruk.jpg" class="card-img-top" alt="Es Jeruk Segar">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-center">Es Jeruk Segar</h5>
+                        <p class="card-text">Minuman jeruk segar dengan es, sempurna untuk menghilangkan haus!</p>
+                        <p class="text-success fw-bold text-center fs-5">Rp 9.000</p>
+                        <button class="btn btn-primary mt-auto" onclick="addToCart('Es Jeruk Segar', 9000)">
+                            <i class="bi bi-cart-plus"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Login dengan verifikasi nomor WA -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login Akun</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" id="login-username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="login-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nomor WhatsApp Aktif <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="login-phone" required placeholder="628xxxxxxxxxx">
+                            <small class="text-muted">Nomor ini harus sama dengan yang terdaftar dan aktif</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Masuk</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <small>Belum punya akun? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Daftar di sini</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Register -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Daftar Akun Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" id="reg-username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="reg-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="reg-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nomor WhatsApp Aktif <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="reg-phone" required placeholder="628xxxxxxxxxx">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alamat Pengiriman</label>
+                            <textarea class="form-control" id="reg-address" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Daftar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Keranjang -->
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel"><i class="bi bi-cart"></i> Keranjang Belanja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cart-items">
+                        <p class="text-muted text-center">Keranjang kosong</p>
+                    </div>
+                    <hr>
+
+                    <div id="note-section" class="mb-4 d-none">
+                        <label for="order-note" class="form-label fw-bold">
+                            <i class="bi bi-pencil-square"></i> Catatan Pesanan (opsional)
+                        </label>
+                        <textarea class="form-control" id="order-note" rows="4" placeholder="Contoh:&#10;- Tolong pedasnya sedang saja&#10;- Tanpa bawang merah&#10;- Kirim setelah jam 14.00"></textarea>
+                    </div>
+
+                    <div id="payment-section" class="mb-4 d-none">
+                        <label for="payment-method" class="form-label fw-bold">
+                            <i class="bi bi-credit-card"></i> Metode Pembayaran <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="payment-method">
+                            <option value="" disabled selected>Pilih metode pembayaran</option>
+                            <option value="Transfer Bank (BCA/Mandiri/BNI)">Transfer Bank (BCA/Mandiri/BNI)</option>
+                            <option value="GoPay">GoPay</option>
+                            <option value="OVO">OVO</option>
+                            <option value="DANA">DANA</option>
+                            <option value="Cash on Delivery (Bayar di tempat)">Cash on Delivery (Bayar di tempat)</option>
+                        </select>
+                    </div>
+
+                    <h4 class="text-end fw-bold">Total: Rp <span id="cart-total">0</span></h4>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-success btn-lg" id="checkout-btn">
+                        <i class="bi bi-whatsapp"></i> Checkout via WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay Notifikasi Status Pesanan -->
+    <div id="notification-overlay">
+        <div id="notification-message">
+            <i class="bi bi-hourglass-split"></i>
+            <h3>Pesanan Sedang Diproses</h3>
+            <p>Pesanan Anda sedang kami buat.<br>Mohon tunggu sebentar ya ❤️</p>
+            <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <button class="btn btn-secondary mt-4" onclick="closeNotification()">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Overlay Tracking Pesanan -->
+    <div id="tracking-overlay">
+        <div class="container my-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4><i class="bi bi-box-seam"></i> Lacak Status Pesanan</h4>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item left">
+                            <div class="timeline-content active">
+                                <i class="bi bi-cart-check"></i>
+                                <h5>Pesanan Diterima</h5>
+                                <small>Pesanan Anda telah kami terima</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item right">
+                            <div class="timeline-content" id="preparing-step">
+                                <i class="bi bi-clock-history"></i>
+                                <h5>Sedang Diproses</h5>
+                                <small>Pesanan sedang kami siapkan</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item left">
+                            <div class="timeline-content" id="ready-step">
+                                <i class="bi bi-check-circle"></i>
+                                <h5>Pesanan Siap</h5>
+                                <small>Pesanan sudah selesai dibuat</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item right">
+                            <div class="timeline-content" id="delivered-step">
+                                <i class="bi bi-truck"></i>
+                                <h5>Sedang Dikirim / Siap Diambil</h5>
+                                <small>Pesanan sedang dalam perjalanan atau siap diambil</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button class="btn btn-secondary" onclick="closeTracking()">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 UMKM Kuliner Indonesia</p>
+        <div>
+            <a href="#"><i class="bi bi-facebook"></i></a>
+            <a href="#"><i class="bi bi-instagram"></i></a>
+            <a href="#"><i class="bi bi-whatsapp"></i></a>
+        </div>
+        <p>Hubungi: +62 89612527583</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let cart = [];
+        let currentUser = null;
+
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+
+        const savedSession = localStorage.getItem('currentUser');
+        if (savedSession) {
+            currentUser = JSON.parse(savedSession);
+            updateLoginUI();
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            if (users.find(u => u.username === username)) {
+                alert('Username sudah digunakan!');
+                return;
+            }
+            const newUser = {
+                username,
+                password: document.getElementById('reg-password').value,
+                name: document.getElementById('reg-name').value.trim(),
+                phone: document.getElementById('reg-phone').value.trim(),
+                address: document.getElementById('reg-address').value.trim()
+            };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Pendaftaran berhasil! Silakan login.');
+            bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+            document.getElementById('registerForm').reset();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const inputPhone = document.getElementById('login-phone').value.trim();
+
+            const user = users.find(u => u.username === username && u.password === password && u.phone === inputPhone);
+
+            if (user) {
+                currentUser = {
+                    username: user.username,
+                    name: user.name,
+                    phone: user.phone,
+                    address: user.address
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateLoginUI();
+                bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+                document.getElementById('loginForm').reset();
+            } else {
+                alert('Login gagal! Pastikan username, password, dan nomor WhatsApp sesuai dengan yang terdaftar.');
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateLoginUI();
+        });
+
+        function updateLoginUI() {
+            if (currentUser) {
+                document.getElementById('login-btn').classList.add('d-none');
+                document.getElementById('user-greeting').textContent = `Halo, ${currentUser.name}!`;
+                document.getElementById('user-greeting').classList.remove('d-none');
+                document.getElementById('logout-btn').classList.remove('d-none');
+            } else {
+                document.getElementById('login-btn').classList.remove('d-none');
+                document.getElementById('user-greeting').classList.add('d-none');
+                document.getElementById('logout-btn').classList.add('d-none');
+            }
+        }
+
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            updateCartUI();
+        }
+
+        function changeQuantity(index, delta) {
+            cart[index].quantity += delta;
+            if (cart[index].quantity <= 0) cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-badge').textContent = totalItems;
+
+            const itemsContainer = document.getElementById('cart-items');
+            const noteSection = document.getElementById('note-section');
+            const paymentSection = document.getElementById('payment-section');
+            itemsContainer.innerHTML = '';
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '<p class="text-muted text-center">Keranjang kosong</p>';
+                noteSection.classList.add('d-none');
+                paymentSection.classList.add('d-none');
+            } else {
+                cart.forEach((item, index) => {
+                    const itemTotal = item.price * item.quantity;
+                    totalPrice += itemTotal;
+                    const div = document.createElement('div');
+                    div.className = 'd-flex justify-content-between align-items-center mb-3 p-3 border rounded';
+                    div.innerHTML = `
+                        <div class="flex-grow-1">
+                            <strong>${item.name}</strong><br>
+                            <small>Rp ${item.price.toLocaleString('id-ID')} × ${item.quantity} = Rp ${itemTotal.toLocaleString('id-ID')}</small>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="changeQuantity(${index}, -1)">-</button>
+                            <button class="btn btn-outline-secondary btn-sm disabled">${item.quantity}</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="changeQuantity(${index}, 1)">+</button>
+                            <button class="btn btn-danger btn-sm ms-2" onclick="removeItem(${index})"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                    itemsContainer.appendChild(div);
+                });
+                noteSection.classList.remove('d-none');
+                paymentSection.classList.remove('d-none');
+            }
+            document.getElementById('cart-total').textContent = totalPrice.toLocaleString('id-ID');
+        }
+
+        document.getElementById('checkout-btn').addEventListener('click', function() {
+            if (cart.length === 0) {
+                alert('Keranjang masih kosong!');
+                return;
+            }
+            if (!currentUser) {
+                alert('Silakan login terlebih dahulu!');
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
+                return;
+            }
+            const paymentMethod = document.getElementById('payment-method').value;
+            if (!paymentMethod) {
+                alert('Silakan pilih metode pembayaran terlebih dahulu!');
+                return;
+            }
+
+            const note = document.getElementById('order-note').value.trim();
+
+            let message = `*Pesanan Baru dari ${currentUser.name}*%0A%0A`;
+            message += `*Data Pemesan:*%0A`;
+            message += `Nama: ${currentUser.name}%0A`;
+            message += `No. HP: ${currentUser.phone}%0A`;
+            message += `Alamat: ${currentUser.address}%0A%0A`;
+
+            message += `*Metode Pembayaran:* ${paymentMethod}%0A%0A`;
+
+            message += `*Detail Pesanan:*%0A%0A`;
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                message += `• ${item.name}%0A  ${item.quantity} × Rp ${item.price.toLocaleString('id-ID')} = Rp ${itemTotal.toLocaleString('id-ID')}%0A%0A`;
+            });
+            message += `*_Total Pesanan: Rp ${total.toLocaleString('id-ID')}_*%0A%0A`;
+
+            if (note) {
+                message += `*Catatan Pesanan:*%0A${note.replace(/\n/g, '%0A')}%0A%0A`;
+            }
+
+            message += `Terima kasih atas pesanannya! ❤️`;
+
+            const waUrl = `https://wa.me/6289612527583?text=${message}`;
+            window.open(waUrl, '_blank');
+
+            // Simpan pesanan ke localStorage untuk admin
+const newOrder = {
+    name: currentUser.name,
+    phone: currentUser.phone,
+    address: currentUser.address,
+    payment: paymentMethod,
+    note: note,
+    items: cart.map(item => ({name: item.name, quantity: item.quantity, price: item.price})),
+    total: total,
+    status: 0, // 0 = baru, 1 = diproses, 2 = siap, 3 = selesai
+    timestamp: new Date().toISOString()
+};
+let adminOrders = JSON.parse(localStorage.getItem('adminOrders')) || [];
+adminOrders.push(newOrder);
+localStorage.setItem('adminOrders', JSON.stringify(adminOrders));
+
+            // Tampilkan notifikasi "Sedang diproses"
+            document.getElementById('notification-overlay').style.display = 'flex';
+
+            // Kosongkan keranjang
+            cart = [];
+            updateCartUI();
+            document.getElementById('order-note').value = '';
+            document.getElementById('payment-method').value = '';
+            bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
+
+            // Simulasi status update
+            setTimeout(() => {
+                document.querySelector('#notification-message i').className = 'bi bi-check-circle-fill';
+                document.querySelector('#notification-message h3').textContent = 'Pesanan Sudah Siap!';
+                document.querySelector('#notification-message h3').style.color = '#28a745';
+                document.querySelector('#notification-message p').innerHTML = 'Pesanan sudah selesai dibuat.<br>Silakan cek status tracking pesanan Anda.';
+                document.querySelector('.spinner-border').style.display = 'none';
+            }, 10000);
+        });
+
+        function closeNotification() {
+            document.getElementById('notification-overlay').style.display = 'none';
+        }
+
+        function showOrderTracking() {
+            document.getElementById('tracking-overlay').style.display = 'block';
+
+            // Update status berdasarkan simulasi terakhir
+            document.getElementById('preparing-step').classList.add('active');
+            document.getElementById('ready-step').classList.add('active');
+            // Jika ingin status "dikirim", tambahkan: document.getElementById('delivered-step').classList.add('active');
+        }
+
+        function closeTracking() {
+            document.getElementById('tracking-overlay').style.display = 'none';
+        }
+
+        function filterProducts(category) {
+            const products = document.querySelectorAll('.product-card');
+            products.forEach(product => {
+                product.style.display = (category === 'all' || product.getAttribute('data-category') === category) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
